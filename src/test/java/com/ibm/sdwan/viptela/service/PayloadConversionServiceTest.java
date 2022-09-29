@@ -37,10 +37,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  	@Test
  	@DisplayName("Testing positive scenario for SyncSmart")
  	public void buildPayloadForSyncSmartTest() throws JsonProcessingException {
- 		String expected = "{\r\n"
- 				+ "  \"username\" : \"test\",\r\n"
- 				+ "  \"password\" : \"test\",\r\n"
- 				+ "  \"validity_string\" : \"valid\"\r\n"
+ 		String expected = "{\n"
+ 				+ "  \"username\" : \"test\",\n"
+ 				+ "  \"password\" : \"test\",\n"
+ 				+ "  \"validity_string\" : \"valid\"\n"
  				+ "}";
  		Map<String, Object> properties = new HashMap<String, Object>();
  		properties.put(SMART_ACCOUNT_USER, "test");
