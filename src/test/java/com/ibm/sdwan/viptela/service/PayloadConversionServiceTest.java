@@ -3,8 +3,9 @@
  import static com.ibm.sdwan.viptela.utils.Constants.SMART_ACCOUNT_PASSWORD;
  import static com.ibm.sdwan.viptela.utils.Constants.SMART_ACCOUNT_USER;
  import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
- import java.util.HashMap;
+import java.util.HashMap;
  import java.util.Map;
 
  import org.junit.jupiter.api.Assertions;
@@ -14,10 +15,12 @@
  import org.mockito.Mockito;
  import org.springframework.beans.factory.annotation.Autowired;
  import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
 
- import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParseException;
  import com.fasterxml.jackson.core.JsonProcessingException;
- import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
  import com.fasterxml.jackson.databind.ObjectWriter;
  import com.ibm.sdwan.viptela.driver.SdwanResponseException;
  import com.ibm.sdwan.viptela.model.viptela.DeviceDetails;
@@ -27,6 +30,8 @@
 
  	@Autowired
  	private PayloadConversionService payloadConversionService;
+ 	@Mock
+ 	private ObjectMapper mapper;
 
 
  	@Test
@@ -52,14 +57,6 @@
  		Assertions.assertNotNull(details);
  		Assertions.assertEquals("1234asd", details.getData().get(0).getSerialNumber());
  		Assertions.assertEquals("type", details.getData().get(0).getDeviceType());
- 	}
-
- 	@Test
- 	@DisplayName("Testing exception scenario for Extracting Devices From Response")
- 	public void extractDevicesFromResponseExceptionTest() {
- 		assertThrows(SdwanResponseException.class, () -> {
- 			payloadConversionService.extractDevicesFromResponse("test");
- 		});
  	}
 
  }

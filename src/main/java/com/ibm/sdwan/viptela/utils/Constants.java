@@ -27,5 +27,6 @@ public class Constants
     public static final String SLASH = "/";
     public static final String CONFIG_TYPE_PATH = "?configtype=cloudinit&inclDefRootCert=false";
     public static final int V_MANAGE_API_RETRY_COUNT = 20;
+    public static final String TENANT_ID = "tenantId";
     
 }

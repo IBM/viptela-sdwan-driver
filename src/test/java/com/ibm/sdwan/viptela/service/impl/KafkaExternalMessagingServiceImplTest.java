@@ -1,8 +1,10 @@
  package com.ibm.sdwan.viptela.service.impl;
 
  import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
- import java.time.Duration;
+import java.time.Duration;
 
  import org.junit.jupiter.api.BeforeEach;
  import org.junit.jupiter.api.DisplayName;
@@ -15,7 +17,8 @@
  import org.springframework.kafka.support.SendResult;
  import org.springframework.util.concurrent.ListenableFuture;
 
- import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
  import com.ibm.sdwan.viptela.config.SDWDriverProperties;
  import com.ibm.sdwan.viptela.model.LcmOpOccPollingRequest;
  import com.ibm.sdwan.viptela.model.ResourceManagerDeploymentLocation;
@@ -40,15 +43,15 @@
 
  	@Test
  	@DisplayName("Testing positive scenario to Send Delayed Execution Async Response")
- 	public void sendDelayedExecutionAsyncResponseTest() {
+ 	public void sendDelayedExecutionAsyncResponseTest() throws JsonProcessingException {
  		ExecutionAsyncResponse executionAsyncResponse = new ExecutionAsyncResponse();
  		executionAsyncResponse.setRequestId("id");
  		SendResult<String, Object> sendResult = mock(SendResult.class);
  		ListenableFuture<SendResult<String, String>> responseFuture = mock(ListenableFuture.class);
-
  		Mockito.when(kafkaTemplate.send(Mockito.anyString(), Mockito.anyString())).thenReturn(responseFuture);
  		kafkaExternalMessagingServiceImpl.sendDelayedExecutionAsyncResponse(executionAsyncResponse,"1",
  				Duration.ofMillis(100));
+ 		verify(kafkaTemplate, times(1)).send(Mockito.anyString(), Mockito.anyString());
  	}
 
  }

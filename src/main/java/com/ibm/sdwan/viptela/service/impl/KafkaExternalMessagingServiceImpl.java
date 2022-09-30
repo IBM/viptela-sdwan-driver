@@ -19,7 +19,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import static com.ibm.sdwan.viptela.utils.Constants.*;
 @Service
 public class KafkaExternalMessagingServiceImpl implements ExternalMessagingService {
 
@@ -39,18 +39,14 @@ public class KafkaExternalMessagingServiceImpl implements ExternalMessagingServi
     @Override public void sendExecutionAsyncResponse(ExecutionAsyncResponse request,String tenantId) {
         try {
             final String message = objectMapper.writeValueAsString(request);
-            // ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(properties.getTopics().getLifecycleResponsesTopic(), message);
-
-            // future.addCallback(sendResult -> logger.debug("ExecutionAsyncResponse successfully sent"),
-            //         exception -> logger.warn("Exception sending ExecutionAsyncResponse", exception));
             if(tenantId.equals("1")) {
                 ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(properties.getTopics().getLifecycleResponsesTopic(), message);
                 future.addCallback(sendResult -> logger.debug("ExecutionAsyncResponse successfully sent"),
                         exception -> logger.warn("Exception while sending ExecutionAsyncResponse", exception));
             }else {
-                logger.info("TenantId in Kafka: " + tenantId);
+                logger.info("tenantId in Kafka: " + tenantId);
                 ProducerRecord<String, String> producerRecord = new ProducerRecord<>(properties.getTopics().getLifecycleResponsesTopic(), message);
-                producerRecord.headers().add("TenantId", tenantId.getBytes());
+                producerRecord.headers().add(TENANT_ID, tenantId.getBytes());
                 ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(producerRecord);
                 future.addCallback(sendResult -> logger.debug("ExecutionAsyncResponse successfully sent"),
                         exception -> logger.warn("Exception while sending ExecutionAsyncResponse", exception));

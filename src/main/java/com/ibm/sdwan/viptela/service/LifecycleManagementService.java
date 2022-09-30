@@ -59,6 +59,7 @@ public class LifecycleManagementService {
 
     public ExecutionAcceptedResponse executeLifecycle(ExecutionRequest executionRequest, String tenantId) throws MessageConversionException {
         final String requestId = UUID.randomUUID().toString();
+        ViptelaUtils.validateDeploymentProperties(executionRequest.getDeploymentLocation().getProperties());
         int vManageApiRetryCount = V_MANAGE_API_RETRY_COUNT;
         Object vManageApiRetryCountObject = executionRequest.getDeploymentLocation().getProperties()
                 .get("vManageApiRetryCount");

@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.ibm</groupId>
     <artifactId>viptela-sdwan-driver</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <name>viptela-sdwan-driver</name>
     <description>Viptela sdwan driver for CP4NA</description>
     <organization>
@@ -385,6 +385,26 @@
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <excludes>
+                        <!-- exclude classes in package com.acme.models whose name starts with Spring -->
+                        <exclude>com/ibm/sdwan/viptela/model/**/*</exclude>
+                        <exclude>com/ibm/sdwan/viptela/security/**/*</exclude>
+                        <exclude>com/ibm/sdwan/viptela/config/**/*</exclude>
+                        <exclude>com/ibm/sdwan/viptela/driver/SdwanResponseException.class</exclude>
+                        <exclude>com/ibm/sdwan/viptela/service/ExternalMessagingService.class</exclude>
+                        <exclude>com/ibm/sdwan/viptela/service/InternalMessagingService.class</exclude>
+                        <exclude>com/ibm/sdwan/viptela/service/MessageConversionException.class</exclude>
+                        <exclude>com/ibm/sdwan/viptela/service/MessageConversionService.class</exclude>
+                        <exclude>com/ibm/sdwan/viptela/service/MissingPropertyException.class</exclude>
+                        <exclude>com/ibm/sdwan/viptela/service/TemplateException.class</exclude>
+                        <exclude>com/ibm/sdwan/viptela/utils/LogUtils.class</exclude>
+                        <exclude>com/ibm/sdwan/viptela/utils/Constants.class</exclude>
+                        <exclude>com/ibm/sdwan/viptela/web/NotImplementedException.class</exclude>
+                        <exclude>com/ibm/sdwan/viptela/web/SdwanExceptionHandlingControllerAdvice.class</exclude>
+                    </excludes>
+                </configuration>
+
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
