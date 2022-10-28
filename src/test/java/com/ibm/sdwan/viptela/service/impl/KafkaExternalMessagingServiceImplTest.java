@@ -49,7 +49,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  		SendResult<String, Object> sendResult = mock(SendResult.class);
  		ListenableFuture<SendResult<String, String>> responseFuture = mock(ListenableFuture.class);
  		Mockito.when(kafkaTemplate.send(Mockito.anyString(), Mockito.anyString())).thenReturn(responseFuture);
- 		kafkaExternalMessagingServiceImpl.sendDelayedExecutionAsyncResponse(executionAsyncResponse,"1",
+ 		kafkaExternalMessagingServiceImpl.sendDelayedExecutionAsyncResponse(executionAsyncResponse,"",
  				Duration.ofMillis(100));
  		verify(kafkaTemplate, times(1)).send(Mockito.anyString(), Mockito.anyString());
  	}
