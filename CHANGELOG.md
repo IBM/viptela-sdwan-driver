@@ -5,9 +5,9 @@
 
 **Implemented enhancements:**
 
-- Removing unwanted dependencies in pom.xml for Viptela driver
-- IBM semeru offical images and spring boot version need to be updated in pom.xml
-- Adding appVersion field in Chart.yaml file
+- Remove unwanted dependencies in pom.xml for Viptela driver
+- IBM semeru offical images in Dockerfile and spring boot version updated in pom.xml
+- Add appVersion field in Chart.yaml file
 
 ## [1.1.0](https://github.com/IBM/viptela-sdwan-driver/tree/1.1.0) (2022-09-30)
 [Full Changelog](https://github.com/IBM/viptela-sdwan-driver/compare/1.0.0...1.1.0)
