@@ -4,7 +4,8 @@ import com.ibm.sdwan.viptela.model.ExecutionAcceptedResponse;
 import com.ibm.sdwan.viptela.model.ExecutionRequest;
 import com.ibm.sdwan.viptela.service.LifecycleManagementService;
 import com.ibm.sdwan.viptela.service.MessageConversionException;
-import io.swagger.annotations.ApiOperation;
+
+import io.swagger.v3.oas.annotations.Operation;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ public class LifecycleController {
     }
 
     @PostMapping("/lifecycle/execute")
-    @ApiOperation(value = "Execute a lifecycle against a sdwan", notes = "Initiates a lifecycle ")
+    @Operation(description = "Execute a lifecycle against a sdwan",  summary = "Initiates a lifecycle ")
     public ResponseEntity<ExecutionAcceptedResponse> executeLifecycle(@RequestBody ExecutionRequest executionRequest, @RequestHeader(value = "tenantId", required = false) String tenantId) throws MessageConversionException{
         logger.info("Received request to execute a lifecycle [{}] ", executionRequest.getLifecycleName());
         logger.info("Received tenantId [{}] ",tenantId);
