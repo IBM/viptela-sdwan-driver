@@ -153,6 +153,21 @@ public class LifecycleManagementService {
                     sdwanDriver.execute(lifecycleName, executionRequest.getDeploymentLocation(), payload,
                             HttpMethod.POST, "", ATTACH_DEVICE, jsessionId, xsrfToken, requestId);
                     outputs.put(DEVICE_UUID, uuid);
+                    // check the status of the attached device.
+                    // check the status for every 5 seconds for 1 minute (It might need minimum 2 minutes of timeout value specified
+                    // for Create lifecycle transition in the resource descriptor in case of Brent timeout)
+                    int retryCount = 0;
+                    while( retryCount <= STATUS_CHECK_RETRY_COUNT){
+                        try {
+                            Thread.sleep(STUTUS_CHECK_DELAY_IN_SECs * 1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        String responseData = sdwanDriver.execute(lifecycleName, executionRequest.getDeploymentLocation(), "",
+                                HttpMethod.GET, uuid, ATTACH_DEVICE_STATUS, jsessionId, xsrfToken, requestId);
+                        logger.info(responseData);
+                        retryCount--;
+                    }
                     break;
                 case LIFECYCLE_INSTALL:
                     // Get Bootstrap config file and attach it to outputs.

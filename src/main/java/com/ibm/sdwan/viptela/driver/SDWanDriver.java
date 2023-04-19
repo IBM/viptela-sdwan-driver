@@ -28,6 +28,7 @@ public class SDWanDriver {
     private static final String API_SYNC_SMART_ENDPOINT = "/system/device/smartaccount/sync";
     private static final String API_GET_UUID = "/system/device/vedges?model=vedge-cloud";
     private static final String API_ATTACH_DEVICE_ENDPOINT = "/template/device/config/attachfeature";
+    private static final String API_ATTACH_DEVICE_STATUS_ENDPOINT = "/device/action/status";
     private static final String API_GET_BOOTSTRAP = "/system/device/bootstrap/device";
     private static final String API_DECOMMISSION_ENDPOINT = "/system/device/decommission";
 
@@ -102,6 +103,8 @@ public class SDWanDriver {
                         return deploymentLocationProperties.get(RC_SERVER_URL) + API_CONTEXT + API_GET_UUID;
                     case ATTACH_DEVICE:
                         return deploymentLocationProperties.get(RC_SERVER_URL) + API_CONTEXT + API_ATTACH_DEVICE_ENDPOINT;
+                    case ATTACH_DEVICE_STATUS:
+                        return deploymentLocationProperties.get(RC_SERVER_URL) + API_CONTEXT + API_ATTACH_DEVICE_STATUS_ENDPOINT+ SLASH+ uuid;
                 }
             case LIFECYCLE_INSTALL:
                 return deploymentLocationProperties.get(RC_SERVER_URL) + API_CONTEXT + API_GET_BOOTSTRAP + SLASH + uuid + CONFIG_TYPE_PATH;
