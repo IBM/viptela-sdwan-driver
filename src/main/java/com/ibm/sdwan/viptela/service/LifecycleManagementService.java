@@ -1,5 +1,7 @@
 package com.ibm.sdwan.viptela.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibm.sdwan.viptela.config.SDWDriverProperties;
 import com.ibm.sdwan.viptela.driver.SDWanDriver;
 import com.ibm.sdwan.viptela.driver.SdwanResponseException;
@@ -10,9 +12,7 @@ import com.ibm.sdwan.viptela.model.alm.ExecutionAsyncResponse;
 import com.ibm.sdwan.viptela.model.alm.ExecutionStatus;
 import com.ibm.sdwan.viptela.model.alm.FailureDetails;
 import com.ibm.sdwan.viptela.model.alm.FailureDetails.FailureCode;
-import com.ibm.sdwan.viptela.model.viptela.DeviceData;
-import com.ibm.sdwan.viptela.model.viptela.DeviceDetails;
-import com.ibm.sdwan.viptela.model.viptela.KafkaMessage;
+import com.ibm.sdwan.viptela.model.viptela.*;
 import com.ibm.sdwan.viptela.security.AuthenticationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +42,6 @@ public class LifecycleManagementService {
     private final InternalMessagingService internalMessagingService;
 
     private int maxVManageApiRetryCount;
-    
     @Autowired
     public LifecycleManagementService(SDWanDriver sdwanDriver, MessageConversionService messageConversionService,
             PayloadConversionService payloadConversionService, ExternalMessagingService externalMessagingService,
@@ -123,8 +122,7 @@ public class LifecycleManagementService {
                     logger.info("responseGetUUID : " + responseGetUUID);
                     DeviceDetails deviceDetails = payloadConversionService.extractDevicesFromResponse(responseGetUUID);
                     List<DeviceData> deviceList = deviceDetails.getData();
-                    // filter the device model of tyoe 'vedge-cloud' and with device-ip is null or
-                    // empty
+                    // filter the device model of tyoe 'vedge-cloud' and with device-ip is null or empty
                     Optional<DeviceData> deviceOptional = deviceList.stream()
                             .filter((deviceData) -> deviceData.getDeviceModel().equalsIgnoreCase(VEDGE_CLOUD)
                                     && deviceData.getDeviceIP() == null
@@ -150,23 +148,60 @@ public class LifecycleManagementService {
                     // attach template to a device
                     String payload = messageConversionService.generateMessageFromRequest(ATTACH_DEVICE,
                             executionRequest);
-                    sdwanDriver.execute(lifecycleName, executionRequest.getDeploymentLocation(), payload,
+                    String output = sdwanDriver.execute(lifecycleName, executionRequest.getDeploymentLocation(), payload,
                             HttpMethod.POST, "", ATTACH_DEVICE, jsessionId, xsrfToken, requestId);
+                    AttachDeviceResponse attachDeviceResponse;
+                    if(output==null) {
+                        authenticationService.logout(authenticationProperties, jsessionId);
+                        throw new SdwanResponseException("No response received after attaching the device.");
+                    }
+                    ObjectMapper mapper = new ObjectMapper();
+                    try {
+                        attachDeviceResponse = mapper.readValue(output, AttachDeviceResponse.class);
+                    } catch (JsonProcessingException e) {
+                        authenticationService.logout(authenticationProperties, jsessionId);
+                        throw new SdwanResponseException(e.getMessage());
+                    }
+                    logger.info(attachDeviceResponse.getId());
                     outputs.put(DEVICE_UUID, uuid);
                     // check the status of the attached device.
-                    // check the status for every 5 seconds for 1 minute (It might need minimum 2 minutes of timeout value specified
-                    // for Create lifecycle transition in the resource descriptor in case of Brent timeout)
-                    int retryCount = 0;
+                    // checks the status with delay of 5 seconds for 12 attempts (It might need minimum 2 minutes of timeout value specified
+                    // for Create lifecycle transition in the resource descriptor in case of Brent timeout error)
+                    int retryCount = 1;
+                    DeviceStatus deviceStatus;
+                    boolean deviceAttachStatus = false;
                     while( retryCount <= STATUS_CHECK_RETRY_COUNT){
+                        logger.info("Attempting to get attach device status, attempt number: "+ retryCount);
+                        String responseData = sdwanDriver.execute(lifecycleName, executionRequest.getDeploymentLocation(), "",
+                                HttpMethod.GET, attachDeviceResponse.getId(), ATTACH_DEVICE_STATUS, jsessionId, xsrfToken, requestId);
+                        if(responseData==null) {
+                            authenticationService.logout(authenticationProperties, jsessionId);
+                            throw new SdwanResponseException("No response received while checking the status of attaching template to device.");
+                        }
+                        try {
+                            deviceStatus = mapper.readValue(responseData, DeviceStatus.class);
+                        } catch (JsonProcessingException e) {
+                            authenticationService.logout(authenticationProperties, jsessionId);
+                            throw new SdwanResponseException(e.getMessage());
+                        }
+                        if(deviceStatus.getData().get(0).getStatusId().contains("success")){
+                            deviceAttachStatus=true;
+                            break;
+                        }
                         try {
                             Thread.sleep(STUTUS_CHECK_DELAY_IN_SECs * 1000);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            authenticationService.logout(authenticationProperties, jsessionId);
+                            throw new SdwanResponseException(e.getMessage());
                         }
-                        String responseData = sdwanDriver.execute(lifecycleName, executionRequest.getDeploymentLocation(), "",
-                                HttpMethod.GET, uuid, ATTACH_DEVICE_STATUS, jsessionId, xsrfToken, requestId);
-                        logger.info(responseData);
-                        retryCount--;
+                        retryCount++;
+                    }
+                    if(!deviceAttachStatus){
+                        logger.error("Status of attach device did not succeed within 1 minute.");
+                        authenticationService.logout(authenticationProperties, jsessionId);
+                        //send delayed response to Kafka
+                        externalMessagingService.sendDelayedExecutionAsyncResponse(new ExecutionAsyncResponse(requestId, ExecutionStatus.FAILED, null, outputs, Collections.emptyMap()), tenantId, rcDriverProperties.getExecutionResponseDelay());
+                        return new ExecutionAcceptedResponse(requestId);
                     }
                     break;
                 case LIFECYCLE_INSTALL:

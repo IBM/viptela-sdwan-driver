@@ -1,15 +1,18 @@
  package com.ibm.sdwan.viptela.service;
 
+ import static com.ibm.sdwan.viptela.utils.Constants.ATTACH_DEVICE;
  import static com.ibm.sdwan.viptela.utils.Constants.SYNC_SMART;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+ import static org.mockito.ArgumentMatchers.any;
+ import static org.mockito.ArgumentMatchers.anyString;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+ import java.util.*;
 
-import org.junit.jupiter.api.BeforeEach;
+ import com.fasterxml.jackson.core.JsonProcessingException;
+ import com.fasterxml.jackson.databind.ObjectMapper;
+ import com.ibm.sdwan.viptela.model.viptela.*;
+ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -25,9 +28,7 @@ import com.ibm.sdwan.viptela.model.ExecutionAcceptedResponse;
 import com.ibm.sdwan.viptela.model.ExecutionRequest;
 import com.ibm.sdwan.viptela.model.GenericExecutionRequestPropertyValue;
 import com.ibm.sdwan.viptela.model.ResourceManagerDeploymentLocation;
-import com.ibm.sdwan.viptela.model.viptela.DeviceData;
-import com.ibm.sdwan.viptela.model.viptela.DeviceDetails;
-import com.ibm.sdwan.viptela.security.AuthenticationService;
+ import com.ibm.sdwan.viptela.security.AuthenticationService;
 //import com.ibm.sdwan.viptela.security.AuthenticatedRestTemplateService;
  import com.ibm.sdwan.viptela.utils.Constants;
 
@@ -73,7 +74,7 @@ import com.ibm.sdwan.viptela.security.AuthenticationService;
  	@Test
  	@DisplayName("Testing positive scenario for Create Lifecycle")
  	public void executeLifecycleCreateTest() throws MessageConversionException {
- 		executionRequest.setLifecycleName(Constants.LIFECYCLE_CREATE); 
+ 		executionRequest.setLifecycleName(Constants.LIFECYCLE_CREATE);
  		DeviceData deviceData = new DeviceData();
  		deviceData.setDeviceModel(Constants.VEDGE_CLOUD);
  		deviceData.setUuid(UUID.randomUUID().toString());
@@ -81,12 +82,23 @@ import com.ibm.sdwan.viptela.security.AuthenticationService;
  		list.add(deviceData);
  		DeviceDetails deviceDetails = new DeviceDetails();
  		deviceDetails.setData(list);
- 		String uuid = UUID.randomUUID().toString();
- 		Mockito.when(payloadConversionService.extractDevicesFromResponse(Mockito.any())).thenReturn(deviceDetails);
+ 		//String uuid = UUID.randomUUID().toString();
+ 		Mockito.when(payloadConversionService.extractDevicesFromResponse(any())).thenReturn(deviceDetails);
  		Mockito.when(payloadConversionService
  				.buildPayloadForSyncSmart(executionRequest.getDeploymentLocation().getProperties())).thenReturn("test");
-		
- 		Mockito.when(sdwanDriver.execute(Constants.LIFECYCLE_CREATE, executionRequest.getDeploymentLocation(), "", HttpMethod.POST, "", SYNC_SMART, "", "", "")).thenReturn(uuid);
+		//String output = "{\"id\":\"push_feature_template_configuration-cbb51866-8e4c-4d69-a3a6-fe643598575b\"}";
+		DeviceStatus deviceStatus = new DeviceStatus();
+		DeviceStatusData deviceStatusData =new DeviceStatusData();
+		deviceStatusData.setStatusId("success");
+		deviceStatus.setData(List.of(deviceStatusData));
+		ObjectMapper mapper = new ObjectMapper();
+		String deviceStatusStr=null;
+		try {
+			deviceStatusStr = mapper.writeValueAsString(deviceStatus);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		Mockito.when(sdwanDriver.execute(any(), any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(deviceStatusStr);
  		ExecutionAcceptedResponse result = lifecycleManagementService.executeLifecycle(executionRequest,tenantId);
  		assertNotNull(result);
  		assertNotNull(result.getRequestId());
@@ -105,7 +117,7 @@ import com.ibm.sdwan.viptela.security.AuthenticationService;
  		DeviceDetails deviceDetails = new DeviceDetails();
  		deviceDetails.setData(list);
  		String uuid = UUID.randomUUID().toString();
- 		Mockito.when(payloadConversionService.extractDevicesFromResponse(Mockito.any())).thenReturn(deviceDetails);
+ 		Mockito.when(payloadConversionService.extractDevicesFromResponse(any())).thenReturn(deviceDetails);
  		Mockito.when(payloadConversionService
  				.buildPayloadForSyncSmart(executionRequest.getDeploymentLocation().getProperties())).thenReturn("test");
 		
@@ -129,7 +141,7 @@ import com.ibm.sdwan.viptela.security.AuthenticationService;
  		DeviceDetails deviceDetails = new DeviceDetails();
  		deviceDetails.setData(list);
  		String uuid = UUID.randomUUID().toString();
- 		Mockito.when(payloadConversionService.extractDevicesFromResponse(Mockito.any())).thenReturn(deviceDetails);
+ 		Mockito.when(payloadConversionService.extractDevicesFromResponse(any())).thenReturn(deviceDetails);
  		Mockito.when(payloadConversionService
  				.buildPayloadForSyncSmart(executionRequest.getDeploymentLocation().getProperties())).thenReturn("test");
 		Mockito.when(authenticationService.getJsessionId(Mockito.anyMap())).thenThrow(ResourceAccessException.class);
@@ -154,7 +166,7 @@ import com.ibm.sdwan.viptela.security.AuthenticationService;
  		list.add(deviceData);
  		DeviceDetails deviceDetails = new DeviceDetails();
  		deviceDetails.setData(list);
- 		Mockito.when(payloadConversionService.extractDevicesFromResponse(Mockito.any())).thenReturn(deviceDetails);
+ 		Mockito.when(payloadConversionService.extractDevicesFromResponse(any())).thenReturn(deviceDetails);
  		assertThrows(SdwanResponseException.class, () -> {
  			lifecycleManagementService.executeLifecycle(executionRequest,tenantId);
  		});

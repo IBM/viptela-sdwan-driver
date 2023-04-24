@@ -5,13 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DeviceStatus {
-    private Object header;
-    private List<DeviceStatusData> data;
+
+public class DeviceStatusData {
+    private String statusId;
 }
