@@ -184,7 +184,8 @@ public class LifecycleManagementService {
                             authenticationService.logout(authenticationProperties, jsessionId);
                             throw new SdwanResponseException(e.getMessage());
                         }
-                        if(deviceStatus.getData().get(0).getStatusId().contains("success")){
+                        if(deviceStatus != null && deviceStatus.getData() != null && deviceStatus.getData().size() != 0 &&
+                                deviceStatus.getData().get(0).getStatusId().contains("success")){
                             deviceAttachStatus=true;
                             break;
                         }
